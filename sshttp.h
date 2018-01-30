@@ -49,7 +49,7 @@ class sshttp {
 private:
 	struct pollfd *pfds;
 	int first_fd, max_fd;
-	uint16_t d_ssh_port, d_http_port, d_local_port;
+	uint16_t d_ssh_port, d_http_port, d_ss_port, d_local_port;
 
 	time_t now;
 
@@ -74,7 +74,7 @@ private:
 	uint16_t https_to_port(const unsigned char *, int);
 
 public:
-	sshttp() : pfds(NULL), d_ssh_port(22), d_http_port(8080), d_local_port(80), now(0),
+	sshttp() : pfds(NULL), d_ssh_port(22), d_http_port(8080), d_ss_port(0), d_local_port(80), now(0),
 	           af(AF_INET), heavy_load(0), err("") {}
 
 	~sshttp() {};
@@ -87,6 +87,10 @@ public:
 	void http_port(uint16_t p)
 	{
 		d_http_port = p;
+	}
+	void ss_port(uint16_t p)
+	{
+		d_ss_port = p;
 	}
 
 	int init(int, const std::string &, const std::string &, bool tproxy = false);

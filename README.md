@@ -122,6 +122,18 @@ measurement.
 _sshttpd_ has small footprint and was optimized for speed so it also runs
 on heavily loaded web servers.
 
+6. Encrypted Service support
+----------------------------
+
+If running some encrypted services after _sshttpd_, you can use `-s <service-port>` too hide it.
+For example, running a encrypted service and ssh service after HTTPS(443) server, after setup
+policy based rule table and iptables, just run this command: `sshttpd -S 22 -H 4433 -s 6443 -L 443 -U nobody -R /var/empty`,
+it will check when handshake with following order:
+
+* ssh service first(22)
+* http service(4433)
+* https service(4433)
+* encrypted service(6443)
 
 Since version 0.24, _sshttpd_ also supports multiple CPU cores. Unless
 `-n 1` is used as switch, _sshttpd_ binds one thread per CPU core,

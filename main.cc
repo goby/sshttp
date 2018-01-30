@@ -60,7 +60,7 @@ using namespace std;
 
 namespace Config
 {
-	uint16_t ssh_port = 22, http_port = 8080;
+	uint16_t ssh_port = 22, http_port = 8080, ss_port = 0;
 	string local_port = "80", laddr = "0.0.0.0";
 	string root = "/var/lib/empty", user = "nobody";
 	int cores = -1, master = 1;
@@ -100,7 +100,7 @@ int main(int argc, char **argv)
 	string::size_type idx = 0;
 
 
-	while ((c = getopt(argc, argv, "S:H:L:R:U:n:6l:N:iT")) != -1) {
+	while ((c = getopt(argc, argv, "S:H:s:L:R:U:n:6l:N:iT")) != -1) {
 		switch (c) {
 		case 'T':
 			Config::tproxy = 1;
@@ -113,6 +113,9 @@ int main(int argc, char **argv)
 			break;
 		case 'H':
 			Config::http_port = atoi(optarg);
+			break;
+		case 's':
+			Config::ss_port = atoi(optarg);
 			break;
 		case 'L':
 			Config::local_port = optarg;
@@ -143,7 +146,7 @@ int main(int argc, char **argv)
 			sni2port[sni.substr(0, idx)] = sni_port;
 			break;
 		default:
-			printf("sshttpd [-n CPU cores] [-S ssh port] [-H http port] [-L lport] [-l laddr] [-6] [-N SNI:port] ");
+			printf("sshttpd [-n CPU cores] [-S ssh port] [-H http port] [-s ss port] [-L lport] [-l laddr] [-6] [-N SNI:port] ");
 #ifdef USE_CAPS
 			printf("[-U user] [-R chroot]");
 #endif
@@ -152,8 +155,8 @@ int main(int argc, char **argv)
 		}
 	}
 
-	printf("sshttpd: Using HTTP_PORT=%d SSH_PORT=%d and local port=%s. Going background.",
-	        Config::http_port, Config::ssh_port, Config::local_port.c_str());
+	printf("sshttpd: Using HTTP_PORT=%d SSH_PORT=%d SS_PORT=%d and local port=%s. Going background.",
+	        Config::http_port, Config::ssh_port, Config::ss_port, Config::local_port.c_str());
 #ifdef USE_CAPS
 	printf(" Using caps/chroot.");
 #endif
@@ -224,6 +227,7 @@ int main(int argc, char **argv)
 
 	sh.ssh_port(Config::ssh_port);
 	sh.http_port(Config::http_port);
+	sh.ss_port(Config::ss_port);
 
 	syslog(LOG_ERR, "sshttpd started, ready to rock");
 	struct sigaction sa;

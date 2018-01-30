@@ -633,7 +633,7 @@ int sshttp::loop()
 uint16_t sshttp::find_port(int fd)
 {
 	int r = 0;
-	unsigned char buf[2048 + 1] = {0};
+	unsigned char buf[16 + 1] = {0}; // why we read so many bytes here?
 
 	r = recv(fd, buf, sizeof(buf) - 1, MSG_PEEK);
 
@@ -654,6 +654,28 @@ uint16_t sshttp::find_port(int fd)
 
 		// In case we found a parsing error of the ClientHello or miss the SNI, pass it
 		// to the original https port
+	}
+
+	if (memcmp(buf, "GET ", 4) == 0 ||
+	    memcmp(buf, "PUT ", 4) == 0 ||
+	    memcmp(buf, "POST ", 5) == 0 ||
+	    memcmp(buf, "PATCH ", 6) == 0 ||
+	    memcmp(buf, "DELETE ", 7) == 0 ||
+	    memcmp(buf, "CONNECT ", 8) == 0) {
+		return d_http_port;
+	}
+
+	// Check if is https
+	if (buf[0] == 0x16 &&  // TLSv1 Record Type
+	    buf[1] == 0x03 && buf[2] < 0x04 && // TLSv1 Version, SSL 3.0 ~ TLS 1.2
+	    // buf[3] & buf[4] is length
+	    buf[5] == 0x01 && // buf[6~8] is msg length
+	    buf[9] == buf[1] && buf[10] < 0x04) {
+		return d_http_port;
+	}
+
+	if (d_ss_port > 0) {
+		return d_ss_port;
 	}
 
 	// no string match? http(s)! (https covered by HTTP_PORT)
